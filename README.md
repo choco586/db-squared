@@ -32,24 +32,4 @@
 | **Infrastructure** | Docker, Kafka/Debezium (WIP) |
 | **Backup** | Custom Python + mysqldump |
 
-##  Project Structure
-db-squared/
-├── backend/ # Python Flask Application
-│ ├── app.py # Main application with read/write separation
-│ ├── db.py # GTID failover manager with UUID verification
-│ ├── config.py # Database configurations
-│ ├── routes/ # API endpoints
-│ │ ├── user_routes.py # CRUD operations
-│ │ ├── auth_routes.py # Authentication
-│ │ └── validators.py # Input validation
-│ └── logs/ # Rotating log files
-│
-├── frontend/ # Web Dashboard
-│ ├── index.html # Real-time monitoring UI
-│ ├── app.js # Data visualization
-│ └── style.css # Dashboard styling
-│
-└── kafka-infra/ # Streaming Infrastructure (WIP)
-├── docker-compose.yaml # Kafka, Zookeeper, Debezium
-└── mysql-config/ # MySQL slave configuration
 
