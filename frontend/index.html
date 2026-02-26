@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>db² - User Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar" style="display: none;">
+        <h1>db²</h1>
+        <div>
+            <span id="welcome-msg"></span>
+            <button onclick="showAdminPanel()" style="background: #6c757d; margin-right: 10px;">Admin</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+    
+    <!-- All Pages Container -->
+    <div id="app">
+        <!-- Home Page -->
+        <div id="home-page" class="page">
+            <div class="container">
+                <h1>db²</h1>
+                <p>User Management System</p>
+                <button onclick="showPage('login')" class="btn">Login</button>
+                <button onclick="showPage('signup')" class="btn">Sign Up</button>
+            </div>
+        </div>
+        
+        <!-- Login Page -->
+        <div id="login-page" class="page" style="display: none;">
+            <div class="container">
+                <h2>Login</h2>
+                <div id="login-error" class="error" style="display: none;"></div>
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button onclick="handleLogin()" class="btn">Login</button>
+                <button onclick="showPage('home')" class="btn">Back</button>
+            </div>
+        </div>
+        
+        <!-- Signup Page -->
+        <div id="signup-page" class="page" style="display: none;">
+            <div class="container">
+                <h2>Sign Up</h2>
+                <div id="signup-error" class="error" style="display: none;"></div>
+                <input type="text" id="signup-name" placeholder="Name">
+                <input type="email" id="signup-email" placeholder="Email">
+                <input type="password" id="signup-password" placeholder="Password">
+                <button onclick="handleSignup()" class="btn">Create Account</button>
+                <button onclick="showPage('home')" class="btn">Back</button>
+            </div>
+        </div>
+        
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page" style="display: none;">
+            <div class="container">
+                <h2>Users Management</h2>
+                <div id="dashboard-error" class="error" style="display: none;"></div>
+                
+                <!-- Add/Edit User Form -->
+                <div id="user-form" style="display: none; margin-bottom: 20px;">
+                    <h3 id="form-title">Add User</h3>
+                    <input type="text" id="user-name" placeholder="Name">
+                    <input type="email" id="user-email" placeholder="Email">
+                    <button onclick="saveUser()" class="btn">Save</button>
+                    <button onclick="hideForm()" class="btn">Cancel</button>
+                </div>
+                
+                <!-- Users List -->
+                <button onclick="showAddForm()" class="btn">Add New User</button>
+                <div id="users-list" style="margin-top: 20px;">
+                    Loading users...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Dashboard Section -->
+    <div id="adminSection" style="display: none; margin: 20px auto; max-width: 800px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <h3 style="color: #333; margin-bottom: 20px;">🔧 Database Status Dashboard (Admin Only)</h3>
+        
+        <div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 5px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Admin Password:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="password" id="adminPassword" placeholder="Enter admin password" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="showAdminPanel()" class="btn" style="background: #28a745;">Unlock Dashboard</button>
+            </div>
+        </div>
+        
+        <div id="dashboard" style="display: none;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button onclick="checkDatabaseHealth()" class="btn">🔄 Refresh Status</button>
+                <button onclick="getDatabaseStats()" class="btn">📊 Refresh Stats</button>
+                <button onclick="hideAdminPanel()" class="btn" style="background: #dc3545;">🔒 Lock Dashboard</button>
+            </div>
+            
+            <div id="healthStatus" style="margin-bottom: 30px;">
+                <h4 style="color: #495057; margin-bottom: 15px;">Database Health Status:</h4>
+                <div id="masterStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-family: 'Courier New', monospace;">
+                    Master: Loading...
+                </div>
+                <div id="slaveStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-family: 'Courier New', monospace;">
+                    Slave: Loading...
+                </div>
+                <div id="overallStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-weight: bold; font-family: 'Courier New', monospace;">
+                    Overall: Loading...
+                </div>
+            </div>
+            
+            <div id="databaseStats" style="padding: 15px; background: white; border-radius: 5px; border: 1px solid #dee2e6;">
+                <h4 style="color: #495057; margin-bottom: 15px;">Database Statistics:</h4>
+                <div id="userCount" style="padding: 10px; background: #e9ecef; border-radius: 4px; margin-bottom: 10px; font-family: 'Courier New', monospace;">
+                    Users: Click "Refresh Stats"
+                </div>
+                <small style="color: #6c757d;">Auto-refreshes every 10 seconds when unlocked</small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+    <script>
+        // Check if user is logged in on load
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            if (user) {
+                showPage('dashboard');
+            } else {
+                showPage('home');
+            }
+        };
+    </script>
+</body>
+</html>

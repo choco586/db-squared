@@ -1,0 +1,3 @@
+FROM mysql:8.0
+COPY mysql-config/slave.cnf /etc/mysql/conf.d/
+RUN chmod 644 /etc/mysql/conf.d/slave.cnf

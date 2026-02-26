@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # 1. ZOOKEEPER - Kafka's coordinator
+  zookeeper:
+    image: zookeeper:3.8
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_4LW_COMMANDS_WHITELIST: "*"      # Allow diagnostic commands
+      ZOO_STANDALONE_ENABLED: "true"       # Single node mode
+    restart: unless-stopped
+    networks:
+      - kafka-network
+
+  # 2. KAFKA - Message broker
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    ports:
+      - "9092:9092"      # External (your app connects here)
+      - "29092:29092"    # Internal (Debezium connects here)
+    environment:
+      KAFKA_BROKER_ID: 1      # Unique broker ID
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      
+      # DUAL LISTENERS: External (localhost) + Internal (docker network)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      
+      # SINGLE-NODE SETTINGS (we have only 1 Kafka broker)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"  # Auto-create topics for dev
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    networks:
+      - kafka-network
+
+  # 3. KAFKA-UI - Web dashboard for monitoring
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092    # Use internal listener
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    networks:
+      - kafka-network
+
+  # 4. DEBEZIUM - MySQL Change Data Capture
+  debezium:
+    image: debezium/connect:2.3.0.Final
+    container_name: debezium
+    ports:
+      - "8083:8083"      # REST API for managing connectors
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092           # Connect to Kafka internally
+      GROUP_ID: 1                              # Consumer group
+      CONFIG_STORAGE_TOPIC: connect_configs    # Store connector configs in Kafka
+      OFFSET_STORAGE_TOPIC: connect_offsets    # Store offsets in Kafka
+      STATUS_STORAGE_TOPIC: connect_status     # Store status in Kafka
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    networks:
+      - kafka-network  
+
+  # 5. MYSQL-SLAVE - ONLY 1 LINE CHANGED
+  mysql-slave:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql-slave
+    container_name: mysql-slave
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: slavepass
+      MYSQL_ROOT_HOST: "%"  # ← ADD THIS for connection fix
+    volumes:
+      - mysql-slave-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - kafka-network
+
+volumes:
+  mysql-slave-data:
+
+networks:
+  kafka-network:
+    driver: bridge

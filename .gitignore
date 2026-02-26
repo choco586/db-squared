@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables 
+.env
+backend/.env
+
+# Logs
+logs/
+*.log
+backend/logs/
+gtid_failover.log
+
+# IDE
+.vscode/
+.idea/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Database dumps 
+*.sql
+backups/

@@ -1,0 +1,18 @@
+{
+  "name": "mysql-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.hostname": "mysql-slave",
+    "database.port": "3306",
+    "database.user": "debezium",
+    "database.password": "debezium",
+    "database.server.id": "1002",
+    "topic.prefix": "replica",
+    "database.exclude.list": "mysql,sys,information_schema,performance_schema",
+    "database.history.kafka.bootstrap.servers": "kafka:29092",
+    "database.history.kafka.topic": "dbhistory.replica",
+    "include.schema.changes": "true",
+    "snapshot.mode": "when_needed",
+    "snapshot.locking.mode": "minimal"
+  }
+}
