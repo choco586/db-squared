@@ -1,134 +1,425 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>db² - User Management</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>db² — Business Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav id="navbar" style="display: none;">
-        <h1>db²</h1>
-        <div>
-            <span id="welcome-msg"></span>
-            <button onclick="showAdminPanel()" style="background: #6c757d; margin-right: 10px;">Admin</button>
-            <button onclick="logout()">Logout</button>
-        </div>
-    </nav>
-    
-    <!-- All Pages Container -->
-    <div id="app">
-        <!-- Home Page -->
-        <div id="home-page" class="page">
-            <div class="container">
-                <h1>db²</h1>
-                <p>User Management System</p>
-                <button onclick="showPage('login')" class="btn">Login</button>
-                <button onclick="showPage('signup')" class="btn">Sign Up</button>
-            </div>
-        </div>
-        
-        <!-- Login Page -->
-        <div id="login-page" class="page" style="display: none;">
-            <div class="container">
-                <h2>Login</h2>
-                <div id="login-error" class="error" style="display: none;"></div>
-                <input type="text" id="username" placeholder="Username">
-                <input type="password" id="password" placeholder="Password">
-                <button onclick="handleLogin()" class="btn">Login</button>
-                <button onclick="showPage('home')" class="btn">Back</button>
-            </div>
-        </div>
-        
-        <!-- Signup Page -->
-        <div id="signup-page" class="page" style="display: none;">
-            <div class="container">
-                <h2>Sign Up</h2>
-                <div id="signup-error" class="error" style="display: none;"></div>
-                <input type="text" id="signup-name" placeholder="Name">
-                <input type="email" id="signup-email" placeholder="Email">
-                <input type="password" id="signup-password" placeholder="Password">
-                <button onclick="handleSignup()" class="btn">Create Account</button>
-                <button onclick="showPage('home')" class="btn">Back</button>
-            </div>
-        </div>
-        
-        <!-- Dashboard Page -->
-        <div id="dashboard-page" class="page" style="display: none;">
-            <div class="container">
-                <h2>Users Management</h2>
-                <div id="dashboard-error" class="error" style="display: none;"></div>
-                
-                <!-- Add/Edit User Form -->
-                <div id="user-form" style="display: none; margin-bottom: 20px;">
-                    <h3 id="form-title">Add User</h3>
-                    <input type="text" id="user-name" placeholder="Name">
-                    <input type="email" id="user-email" placeholder="Email">
-                    <button onclick="saveUser()" class="btn">Save</button>
-                    <button onclick="hideForm()" class="btn">Cancel</button>
-                </div>
-                
-                <!-- Users List -->
-                <button onclick="showAddForm()" class="btn">Add New User</button>
-                <div id="users-list" style="margin-top: 20px;">
-                    Loading users...
-                </div>
-            </div>
-        </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LANDING PAGE
+  ═══════════════════════════════════════════════════════ -->
+  <div id="page-landing" class="page active">
+    <div class="landing-bg"></div>
+    <div class="landing-center">
+      <div class="brand-logo">db<sup>2</sup></div>
+      <p class="brand-tagline">Multi-tenant business platform<br>with GTID failover</p>
+      <div class="landing-actions">
+        <button class="btn btn-primary" onclick="showPage('login')">Login</button>
+        <button class="btn btn-ghost" onclick="showPage('register')">Register Business</button>
+      </div>
     </div>
-    
-    <!-- Admin Dashboard Section -->
-    <div id="adminSection" style="display: none; margin: 20px auto; max-width: 800px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-        <h3 style="color: #333; margin-bottom: 20px;">🔧 Database Status Dashboard (Admin Only)</h3>
-        
-        <div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 5px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Admin Password:</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="password" id="adminPassword" placeholder="Enter admin password" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <button onclick="showAdminPanel()" class="btn" style="background: #28a745;">Unlock Dashboard</button>
-            </div>
+    <div class="landing-footer">GTID-based MySQL failover · AWS RDS Primary · Docker Secondary</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LOGIN PAGE
+  ═══════════════════════════════════════════════════════ -->
+  <div id="page-login" class="page">
+    <div class="auth-split">
+      <div class="auth-brand">
+        <div class="brand-logo">db<sup>2</sup></div>
+        <p>Sign in to your business account</p>
+      </div>
+      <div class="auth-form-panel">
+        <h2>Welcome back</h2>
+        <div id="login-error" class="alert alert-error" style="display:none"></div>
+        <div class="field">
+          <label>Business Name</label>
+          <input type="text" id="login-business" placeholder="Acme Corp" autocomplete="organization">
         </div>
-        
-        <div id="dashboard" style="display: none;">
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button onclick="checkDatabaseHealth()" class="btn">🔄 Refresh Status</button>
-                <button onclick="getDatabaseStats()" class="btn">📊 Refresh Stats</button>
-                <button onclick="hideAdminPanel()" class="btn" style="background: #dc3545;">🔒 Lock Dashboard</button>
-            </div>
-            
-            <div id="healthStatus" style="margin-bottom: 30px;">
-                <h4 style="color: #495057; margin-bottom: 15px;">Database Health Status:</h4>
-                <div id="masterStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-family: 'Courier New', monospace;">
-                    Master: Loading...
-                </div>
-                <div id="slaveStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-family: 'Courier New', monospace;">
-                    Slave: Loading...
-                </div>
-                <div id="overallStatus" style="padding: 12px; margin: 8px 0; border-radius: 5px; font-weight: bold; font-family: 'Courier New', monospace;">
-                    Overall: Loading...
-                </div>
-            </div>
-            
-            <div id="databaseStats" style="padding: 15px; background: white; border-radius: 5px; border: 1px solid #dee2e6;">
-                <h4 style="color: #495057; margin-bottom: 15px;">Database Statistics:</h4>
-                <div id="userCount" style="padding: 10px; background: #e9ecef; border-radius: 4px; margin-bottom: 10px; font-family: 'Courier New', monospace;">
-                    Users: Click "Refresh Stats"
-                </div>
-                <small style="color: #6c757d;">Auto-refreshes every 10 seconds when unlocked</small>
-            </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="email" id="login-username" placeholder="you@company.com" autocomplete="username">
         </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="handleLogin()">Sign In</button>
+        <p class="auth-switch">Don't have an account? <a href="#" onclick="showPage('register')">Register your business</a></p>
+      </div>
     </div>
-    
-    <script src="app.js"></script>
-    <script>
-        // Check if user is logged in on load
-        window.onload = function() {
-            const user = localStorage.getItem('user');
-            if (user) {
-                showPage('dashboard');
-            } else {
-                showPage('home');
-            }
-        };
-    </script>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       REGISTER PAGE
+  ═══════════════════════════════════════════════════════ -->
+  <div id="page-register" class="page">
+    <div class="auth-split">
+      <div class="auth-brand">
+        <div class="brand-logo">db<sup>2</sup></div>
+        <p>Register your business and become the admin</p>
+      </div>
+      <div class="auth-form-panel">
+        <h2>Register Business</h2>
+        <div id="register-error" class="alert alert-error" style="display:none"></div>
+        <div id="register-success" class="alert alert-success" style="display:none"></div>
+        <div class="field">
+          <label>Business Name</label>
+          <input type="text" id="reg-business" placeholder="Acme Corp">
+        </div>
+        <div class="field">
+          <label>Admin Username (email)</label>
+          <input type="email" id="reg-username" placeholder="admin@acme.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Min 6 characters">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="handleRegister()">Create Business</button>
+        <p class="auth-switch">Already registered? <a href="#" onclick="showPage('login')">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       DASHBOARD
+  ═══════════════════════════════════════════════════════ -->
+  <div id="page-dashboard" class="page">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">db<sup>2</sup></div>
+      <div class="sidebar-business" id="sidebar-business-name"></div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-tab="customers" onclick="switchTab('customers')">
+          <span class="nav-icon">◈</span> Customers
+        </a>
+        <a class="nav-item" data-tab="products" onclick="switchTab('products')">
+          <span class="nav-icon">◈</span> Products
+        </a>
+        <a class="nav-item" data-tab="orders" onclick="switchTab('orders')">
+          <span class="nav-icon">◈</span> Orders
+        </a>
+        <a class="nav-item admin-only" data-tab="employees" onclick="switchTab('employees')">
+          <span class="nav-icon">◈</span> Employees
+        </a>
+        <a class="nav-item" data-tab="logs" onclick="switchTab('logs')">
+          <span class="nav-icon">◈</span> Logs
+        </a>
+        <a class="nav-item admin-only" data-tab="health" onclick="switchTab('health')">
+          <span class="nav-icon">◈</span> DB Health
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-name" id="sidebar-username"></div>
+          <div class="sidebar-user-role" id="sidebar-role"></div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ── Customers Tab ─────────────────────────────── -->
+      <section id="tab-customers" class="tab-panel active">
+        <div class="panel-header">
+          <div>
+            <h1>Customers</h1>
+            <p class="panel-subtitle">Manage your customer directory</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('customer-modal')">+ Add Customer</button>
+        </div>
+        <div id="customers-alert" class="alert" style="display:none"></div>
+        <div class="table-wrap">
+          <table class="data-table" id="customers-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Since</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customers-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Products Tab ──────────────────────────────── -->
+      <section id="tab-products" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Products</h1>
+            <p class="panel-subtitle">Inventory and pricing</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('product-modal')">+ Add Product</button>
+        </div>
+        <div id="products-alert" class="alert" style="display:none"></div>
+        <div class="table-wrap">
+          <table class="data-table" id="products-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th><th>Supplier</th><th>Price</th><th>Stock</th><th>Expires</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-body"><tr><td colspan="7" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Orders Tab ────────────────────────────────── -->
+      <section id="tab-orders" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Orders</h1>
+            <p class="panel-subtitle">Track and manage orders</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('order-modal')">+ New Order</button>
+        </div>
+        <div id="orders-alert" class="alert" style="display:none"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Employees Tab (admin only) ────────────────── -->
+      <section id="tab-employees" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Employees</h1>
+            <p class="panel-subtitle">Manage team accounts</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('employee-modal')">+ Add Employee</button>
+        </div>
+        <div id="employees-alert" class="alert" style="display:none"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Since</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employees-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Logs Tab ──────────────────────────────────── -->
+      <section id="tab-logs" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Transaction Logs</h1>
+            <p class="panel-subtitle" id="logs-subtitle">Your order history</p>
+          </div>
+          <div class="filter-row">
+            <select id="log-status-filter" onchange="loadLogs()">
+              <option value="">All statuses</option>
+              <option value="placed">Placed</option>
+              <option value="processing">Processing</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadLogs()">↺ Refresh</button>
+          </div>
+        </div>
+        <div id="logs-alert" class="alert" style="display:none"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th id="log-placedby-head"></th>
+              </tr>
+            </thead>
+            <tbody id="logs-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── DB Health Tab (admin only) ────────────────── -->
+      <section id="tab-health" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>DB Health</h1>
+            <p class="panel-subtitle">GTID failover status</p>
+          </div>
+          <div class="filter-row">
+            <button class="btn btn-ghost" onclick="loadHealth()">↺ Refresh</button>
+          </div>
+        </div>
+
+        <!-- Superadmin unlock -->
+        <div id="health-lock-panel" class="health-lock">
+          <p>This panel requires the superadmin password</p>
+          <div class="health-lock-row">
+            <input type="password" id="superadmin-pw" placeholder="Superadmin password">
+            <button class="btn btn-primary" onclick="unlockHealth()">Unlock</button>
+          </div>
+          <div id="health-lock-error" class="alert alert-error" style="display:none"></div>
+        </div>
+
+        <div id="health-content" style="display:none">
+          <div class="health-grid">
+            <div class="health-card" id="health-primary">
+              <div class="health-card-label">PRIMARY · RDS</div>
+              <div class="health-status-dot" id="primary-dot"></div>
+              <div class="health-card-status" id="primary-status">—</div>
+              <div class="health-card-detail" id="primary-detail"></div>
+            </div>
+            <div class="health-card" id="health-secondary">
+              <div class="health-card-label">SECONDARY · Docker</div>
+              <div class="health-status-dot" id="secondary-dot"></div>
+              <div class="health-card-status" id="secondary-status">—</div>
+              <div class="health-card-detail" id="secondary-detail"></div>
+            </div>
+            <div class="health-card health-overall" id="health-overall-card">
+              <div class="health-card-label">OVERALL</div>
+              <div class="health-overall-value" id="overall-status">—</div>
+              <div class="health-card-detail" id="overall-detail"></div>
+            </div>
+          </div>
+
+          <div class="health-actions">
+            <button class="btn btn-danger" onclick="triggerFailover()">Force Failover →</button>
+            <button class="btn btn-ghost" onclick="triggerFailback()">Force Failback ←</button>
+          </div>
+
+          <div class="health-meta" id="health-meta"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MODALS
+  ═══════════════════════════════════════════════════════ -->
+
+  <!-- Customer Modal -->
+  <div id="customer-modal" class="modal-overlay" onclick="closeModalOutside(event,'customer-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="customer-modal-title">Add Customer</h3>
+        <button class="modal-close" onclick="closeModal('customer-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="customer-modal-error" class="alert alert-error" style="display:none"></div>
+        <div class="field"><label>Full Name</label><input type="text" id="c-name" placeholder="Jane Smith"></div>
+        <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="jane@example.com"></div>
+        <div class="field"><label>Phone (optional)</label><input type="text" id="c-phone" placeholder="555-0100"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('customer-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCustomer()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div id="product-modal" class="modal-overlay" onclick="closeModalOutside(event,'product-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="product-modal-title">Add Product</h3>
+        <button class="modal-close" onclick="closeModal('product-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="product-modal-error" class="alert alert-error" style="display:none"></div>
+        <div class="field"><label>Product Name</label><input type="text" id="p-name" placeholder="Widget Pro"></div>
+        <div class="field"><label>Supplier</label><input type="text" id="p-supplier" placeholder="ACME Supplies"></div>
+        <div class="field"><label>Price ($)</label><input type="number" id="p-price" placeholder="9.99" min="0" step="0.01"></div>
+        <div class="field"><label>Stock Quantity</label><input type="number" id="p-stock" placeholder="100" min="0"></div>
+        <div class="field"><label>Expiry Date (optional)</label><input type="date" id="p-expiry"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('product-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div id="order-modal" class="modal-overlay" onclick="closeModalOutside(event,'order-modal')">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>New Order</h3>
+        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="order-modal-error" class="alert alert-error" style="display:none"></div>
+        <div class="field">
+          <label>Customer</label>
+          <select id="o-customer"><option value="">Select customer…</option></select>
+        </div>
+        <div class="order-items-header">
+          <label>Items</label>
+          <button class="btn btn-ghost btn-sm" onclick="addOrderItemRow()">+ Add Item</button>
+        </div>
+        <div id="order-items-list"></div>
+        <div class="order-total-row">
+          <span>Estimated Total:</span>
+          <span id="order-total-preview">$0.00</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('order-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Modal -->
+  <div id="employee-modal" class="modal-overlay" onclick="closeModalOutside(event,'employee-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="employee-modal-title">Add Employee</h3>
+        <button class="modal-close" onclick="closeModal('employee-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="employee-modal-error" class="alert alert-error" style="display:none"></div>
+        <div class="field"><label>Username (email)</label><input type="email" id="e-username" placeholder="staff@company.com"></div>
+        <div class="field"><label>Password</label><input type="password" id="e-password" placeholder="Min 6 characters"></div>
+        <div class="field">
+          <label>Role</label>
+          <select id="e-role">
+            <option value="employee">Employee</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('employee-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEmployee()">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div id="order-detail-modal" class="modal-overlay" onclick="closeModalOutside(event,'order-detail-modal')">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3 id="order-detail-title">Order Detail</h3>
+        <button class="modal-close" onclick="closeModal('order-detail-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="order-detail-body">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>

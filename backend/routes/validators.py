@@ -1,49 +1,40 @@
-"""
-Minimal validators - just enough to prevent SQL injection and basic errors.
-"""
+# backend/routes/validators.py
+#
+# The full Validator class now lives in db.py so it's available to all
+# route files without circular imports.
+#
+# This file is kept for backward compatibility in case any existing code
+# imports QuickValidator from here. New code should import directly from db:
+#
+#   from db import Validator, ValidationError
+#
+
+from db import Validator, ValidationError
+
 
 class QuickValidator:
-    
+    """
+    Legacy validator — kept for backward compatibility.
+    All new code should use db.Validator directly.
+    """
+
     @staticmethod
     def sanitize_sql_input(text, max_len=255):
-        """Prevent SQL injection"""
-        if not text or not isinstance(text, str):
-            return ""
-        
-        # Remove dangerous SQL characters
-        dangerous = ["'", '"', ';', '--', '/*', '*/']
-        cleaned = text
-        for char in dangerous:
-            cleaned = cleaned.replace(char, '')
-        
-        cleaned = cleaned.strip()
-        if len(cleaned) > max_len:
-            cleaned = cleaned[:max_len]
-        
-        return cleaned
-    
+        return Validator.sanitize(text, max_len)
+
     @staticmethod
     def validate_user_input(data):
-        """Basic validation for user CRUD operations"""
-        # Sanitize first
-        name = QuickValidator.sanitize_sql_input(data.get('name', ''), 100)
-        email = QuickValidator.sanitize_sql_input(data.get('email', ''), 255)
-        
-        if not name or len(name) < 2:
-            return False, "Name must be at least 2 characters"
-        
-        if not email or '@' not in email or '.' not in email:
-            return False, "Invalid email"
-        
-        return True, {"name": name, "email": email.lower()}
-    
+        try:
+            name  = Validator.require_string(data.get('name', ''), 'name', min_len=2, max_len=100)
+            email = Validator.validate_username(data.get('email', ''))
+            return True, {'name': name, 'email': email}
+        except ValidationError as e:
+            return False, str(e)
+
     @staticmethod
     def validate_user_id(user_id):
-        """Validate user ID format"""
         try:
-            uid = int(user_id)
-            if uid <= 0:
-                return False, "Invalid user ID"
+            uid = Validator.require_positive_int(user_id, 'user_id')
             return True, uid
-        except:
-            return False, "User ID must be a number"
+        except ValidationError as e:
+            return False, str(e)
