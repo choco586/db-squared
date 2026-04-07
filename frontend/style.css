@@ -1,7 +1,6 @@
 /* ============================================================
    DB² — STYLESHEET
    Font: IBM Plex Mono (brand) + IBM Plex Sans (content)
-   Theme: Industrial utilitarian — dark sidebar, clean panels
    ============================================================ */
 
 /* ── Variables ───────────────────────────────────────────── */
@@ -254,11 +253,11 @@ input, select, textarea { font-family: inherit; font-size: 0.95rem; }
 .btn-primary:hover { background: var(--accent-dim); }
 
 .btn-ghost {
-  background: transparent;
+  background: #50C878;
   color: var(--text-muted);
   border: 1.5px solid var(--border);
 }
-.btn-ghost:hover { background: var(--surface); color: var(--text); }
+.btn-ghost:hover { background: #7CFC00; color: var(--text); }
 
 .btn-danger {
   background: var(--red-bg);
@@ -848,4 +847,54 @@ input, select, textarea { font-family: inherit; font-size: 0.95rem; }
   .tab-panel { padding: 1rem; }
   .panel-header { flex-direction: column; gap: .75rem; }
   .health-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ── Reports Tab ──────────────────────────────────────────── */
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  transition: border-color .2s;
+}
+
+.report-card:hover {
+  border-color: var(--accent);
+}
+
+.report-card-icon {
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+.report-card-title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.report-card-desc {
+  font-size: .85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.alert-info {
+  background: rgba(99, 179, 237, 0.1);
+  border: 1px solid rgba(99, 179, 237, 0.3);
+  color: #63b3ed;
 }

@@ -112,6 +112,7 @@ function switchTab(name) {
     case 'orders':     loadOrders();    break;
     case 'employees':  loadEmployees(); break;
     case 'logs':       loadLogs();      break;
+    case 'reports':    /* static cards, nothing to load */ break;
     case 'health':     /* unlocked separately */ break;
   }
 }
@@ -767,14 +768,6 @@ async function loadHealth() {
     `Writable: ${primary.writable ? '✓' : '✗'}`,
   ]);
 
-  // Secondary
-  const secondary = data.databases.slave;
-  setHealthCard('secondary', secondary.status, secondary.hostname, [
-    `Port: ${secondary.port}`,
-    `GTID: ${secondary.gtid_ok ? '✓' : '✗'}`,
-    `Replicating: ${secondary.replicating ? '✓' : '✗'}`,
-    `Lag: ${secondary.lag_seconds != null ? secondary.lag_seconds + 's' : '—'}`,
-  ]);
 
   // Overall
   const overallEl   = document.getElementById('overall-status');
@@ -785,10 +778,10 @@ async function loadHealth() {
     data.overall === 'DEGRADED' ? 'var(--amber)' : 'var(--red)';
 
   document.getElementById('overall-detail').textContent =
-    `Active DB: ${data.current_master} · Timestamp: ${new Date(data.timestamp).toLocaleTimeString()}`;
+    `Active DB: ${data.current_master} · ${new Date(data.timestamp).toLocaleTimeString()}`;
 
   document.getElementById('health-meta').textContent =
-    `Failover in progress: ${data.failover_in_progress} · Failback in progress: ${data.failback_in_progress}`;
+    `Failovers: ${data.stats.failovers} · Failbacks: ${data.stats.failbacks}`;
 
   // Auto-refresh every 10s while on health tab
   if (!_healthInterval) {
@@ -848,6 +841,72 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
+
+
+// ════════════════════════════════════════════════════════════
+//  REPORTS (admin only)
+// ════════════════════════════════════════════════════════════
+
+async function downloadReport(type) {
+  showAlert('reports-alert', `Generating ${type} report…`, 'info');
+  try {
+    const res = await fetch(`${API}/reports/${type}`, apiOpts('GET'));
+    if (!res.ok) {
+      const data = await res.json();
+      showAlert('reports-alert', data.error || 'Failed to generate report');
+      return;
+    }
+    // Trigger file download in the browser
+    const blob     = await res.blob();
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    const filename = `${type}_report_${new Date().toISOString().slice(0,10)}.csv`;
+    a.href         = url;
+    a.download     = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    hideAlert('reports-alert');
+    toast(`${type} report downloaded`);
+  } catch (e) {
+    showAlert('reports-alert', 'Download failed — check your connection');
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+//  MODAL OPEN HELPERS
+//  index.html buttons call these directly
+// ════════════════════════════════════════════════════════════
+
+function openAddCustomer() {
+  _editCustomerId = null;
+  document.getElementById('c-name').value  = '';
+  document.getElementById('c-email').value = '';
+  document.getElementById('c-phone').value = '';
+  document.getElementById('customer-modal-title').textContent = 'Add Customer';
+  hideAlert('customer-modal-error');
+  openModal('customer-modal');
+}
+
+function openAddProduct() {
+  _editProductId = null;
+  ['p-name','p-supplier','p-price','p-stock','p-expiry'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('product-modal-title').textContent = 'Add Product';
+  hideAlert('product-modal-error');
+  openModal('product-modal');
+}
+
+function openAddEmployee() {
+  document.getElementById('e-username').value = '';
+  document.getElementById('e-password').value = '';
+  document.getElementById('e-role').value     = 'employee';
+  hideAlert('employee-modal-error');
+  openModal('employee-modal');
+}
 
 // ════════════════════════════════════════════════════════════
 //  INIT

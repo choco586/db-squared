@@ -17,13 +17,13 @@
     <div class="landing-bg"></div>
     <div class="landing-center">
       <div class="brand-logo">db<sup>2</sup></div>
-      <p class="brand-tagline">Multi-tenant business platform<br>with GTID failover</p>
+      <p class="brand-tagline"><br>THE<br> business platform</p>
       <div class="landing-actions">
-        <button class="btn btn-primary" onclick="showPage('login')">Login</button>
-        <button class="btn btn-ghost" onclick="showPage('register')">Register Business</button>
+        <button class="btn btn-primary" onclick="showPage('login')">Login to your business</button>
+        <button class="btn btn-ghost" onclick="showPage('register')">New business? Register Now</button>
       </div>
     </div>
-    <div class="landing-footer">GTID-based MySQL failover · AWS RDS Primary · Docker Secondary</div>
+    <div class="landing-footer">Version 1.0 </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════
@@ -113,6 +113,9 @@
         <a class="nav-item" data-tab="logs" onclick="switchTab('logs')">
           <span class="nav-icon">◈</span> Logs
         </a>
+        <a class="nav-item admin-only" data-tab="reports" onclick="switchTab('reports')">
+          <span class="nav-icon">◈</span> Reports
+        </a>
         <a class="nav-item admin-only" data-tab="health" onclick="switchTab('health')">
           <span class="nav-icon">◈</span> DB Health
         </a>
@@ -137,15 +140,13 @@
             <h1>Customers</h1>
             <p class="panel-subtitle">Manage your customer directory</p>
           </div>
-          <button class="btn btn-primary" onclick="openModal('customer-modal')">+ Add Customer</button>
+          <button class="btn btn-primary" onclick="openAddCustomer()">+ Add Customer</button>
         </div>
         <div id="customers-alert" class="alert" style="display:none"></div>
         <div class="table-wrap">
-          <table class="data-table" id="customers-table">
+          <table class="data-table">
             <thead>
-              <tr>
-                <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Since</th><th>Actions</th>
-              </tr>
+              <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Since</th><th>Actions</th></tr>
             </thead>
             <tbody id="customers-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
           </table>
@@ -159,15 +160,13 @@
             <h1>Products</h1>
             <p class="panel-subtitle">Inventory and pricing</p>
           </div>
-          <button class="btn btn-primary" onclick="openModal('product-modal')">+ Add Product</button>
+          <button class="btn btn-primary" onclick="openAddProduct()">+ Add Product</button>
         </div>
         <div id="products-alert" class="alert" style="display:none"></div>
         <div class="table-wrap">
-          <table class="data-table" id="products-table">
+          <table class="data-table">
             <thead>
-              <tr>
-                <th>#</th><th>Name</th><th>Supplier</th><th>Price</th><th>Stock</th><th>Expires</th><th>Actions</th>
-              </tr>
+              <tr><th>#</th><th>Name</th><th>Supplier</th><th>Price</th><th>Stock</th><th>Expires</th><th>Actions</th></tr>
             </thead>
             <tbody id="products-body"><tr><td colspan="7" class="loading-row">Loading…</td></tr></tbody>
           </table>
@@ -181,15 +180,13 @@
             <h1>Orders</h1>
             <p class="panel-subtitle">Track and manage orders</p>
           </div>
-          <button class="btn btn-primary" onclick="openModal('order-modal')">+ New Order</button>
+          <button class="btn btn-primary" onclick="openOrderModal()">+ New Order</button>
         </div>
         <div id="orders-alert" class="alert" style="display:none"></div>
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th>
-              </tr>
+              <tr><th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody id="orders-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
           </table>
@@ -203,15 +200,13 @@
             <h1>Employees</h1>
             <p class="panel-subtitle">Manage team accounts</p>
           </div>
-          <button class="btn btn-primary" onclick="openModal('employee-modal')">+ Add Employee</button>
+          <button class="btn btn-primary" onclick="openAddEmployee()">+ Add Employee</button>
         </div>
         <div id="employees-alert" class="alert" style="display:none"></div>
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Since</th><th>Actions</th>
-              </tr>
+              <tr><th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Since</th><th>Actions</th></tr>
             </thead>
             <tbody id="employees-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
           </table>
@@ -240,12 +235,41 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th id="log-placedby-head"></th>
-              </tr>
+              <tr><th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th id="log-placedby-head"></th></tr>
             </thead>
             <tbody id="logs-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- ── Reports Tab (admin only) ──────────────────── -->
+      <section id="tab-reports" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h1>Reports</h1>
+            <p class="panel-subtitle">Download CSV exports of your business data</p>
+          </div>
+        </div>
+        <div id="reports-alert" class="alert" style="display:none"></div>
+        <div class="reports-grid">
+          <div class="report-card">
+            <div class="report-card-icon">◈</div>
+            <div class="report-card-title">Customers</div>
+            <div class="report-card-desc">All customer records including name, email, phone and registration date</div>
+            <button class="btn btn-primary" onclick="downloadReport('customers')">Download CSV</button>
+          </div>
+          <div class="report-card">
+            <div class="report-card-icon">◈</div>
+            <div class="report-card-title">Products</div>
+            <div class="report-card-desc">Full product inventory with pricing, stock levels and expiry dates</div>
+            <button class="btn btn-primary" onclick="downloadReport('products')">Download CSV</button>
+          </div>
+          <div class="report-card">
+            <div class="report-card-icon">◈</div>
+            <div class="report-card-title">Orders</div>
+            <div class="report-card-desc">All orders with customer, date, total amount and current status</div>
+            <button class="btn btn-primary" onclick="downloadReport('orders')">Download CSV</button>
+          </div>
         </div>
       </section>
 
@@ -254,14 +278,13 @@
         <div class="panel-header">
           <div>
             <h1>DB Health</h1>
-            <p class="panel-subtitle">GTID failover status</p>
+            <p class="panel-subtitle">RDS primary status</p>
           </div>
           <div class="filter-row">
             <button class="btn btn-ghost" onclick="loadHealth()">↺ Refresh</button>
           </div>
         </div>
 
-        <!-- Superadmin unlock -->
         <div id="health-lock-panel" class="health-lock">
           <p>This panel requires the superadmin password</p>
           <div class="health-lock-row">
@@ -279,24 +302,12 @@
               <div class="health-card-status" id="primary-status">—</div>
               <div class="health-card-detail" id="primary-detail"></div>
             </div>
-            <div class="health-card" id="health-secondary">
-              <div class="health-card-label">SECONDARY · Docker</div>
-              <div class="health-status-dot" id="secondary-dot"></div>
-              <div class="health-card-status" id="secondary-status">—</div>
-              <div class="health-card-detail" id="secondary-detail"></div>
-            </div>
             <div class="health-card health-overall" id="health-overall-card">
               <div class="health-card-label">OVERALL</div>
               <div class="health-overall-value" id="overall-status">—</div>
               <div class="health-card-detail" id="overall-detail"></div>
             </div>
           </div>
-
-          <div class="health-actions">
-            <button class="btn btn-danger" onclick="triggerFailover()">Force Failover →</button>
-            <button class="btn btn-ghost" onclick="triggerFailback()">Force Failback ←</button>
-          </div>
-
           <div class="health-meta" id="health-meta"></div>
         </div>
       </section>

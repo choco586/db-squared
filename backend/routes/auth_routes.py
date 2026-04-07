@@ -173,6 +173,6 @@ def login():
         })
 
     except Exception as e:
-        return jsonify({'success': False, 'error': 'Login failed. Please try again.'}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
     finally:
         return_connection(conn)
